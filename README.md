@@ -112,5 +112,5 @@ http://127.0.0.1:8000/docs/api
 
 
 > ⚠️ Dokumentasi hanya dapat diakses secara lokal karena aplikasi belum di-deploy.
-![API Docs](assets/docs-preview.jpg)
+![API Docs](assets/docs-preview.JPG)
 ---

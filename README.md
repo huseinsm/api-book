@@ -66,7 +66,7 @@ php artisan key:generate
 ```
 
 5. Setup database di file `.env`:
-
+ 
 ```
 DB_DATABASE=api_book
 DB_USERNAME=root

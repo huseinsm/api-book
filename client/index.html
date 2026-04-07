@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book API Client</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 { border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; color: var(--primary); }
+
+        .form-group { margin-bottom: 15px; }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-save { background-color: var(--primary); color: white; }
+        .btn-save:hover { background-color: var(--primary-hover); }
+        .btn-reset { background-color: #94a3b8; color: white; margin-left: 5px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th { background-color: #f1f5f9; color: #475569; font-weight: 600; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        
+        tr:hover { background-color: #f8fafc; }
+
+        .btn-edit { background-color: #f59e0b; color: white; padding: 5px 10px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📚 Book Management System</h2>
+
+    <div id="app">
+        <input type="hidden" id="bookId">
+        <div class="form-group"><input type="text" id="title" placeholder="Judul Buku"></div>
+        <div class="form-group"><input type="text" id="author" placeholder="Penulis"></div>
+        <div class="form-group"><input type="text" id="isbn" placeholder="ISBN (Contoh: 978-xxx)"></div>
+        <div class="form-group"><input type="date" id="published_date"></div>
+        <button class="btn-save" onclick="saveBook()">Simpan Buku</button>
+        <button class="btn-reset" onclick="resetForm()">Reset</button>
+
+        <h3>Daftar Koleksi</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Judul</th>
+                    <th>Penulis</th>
+                    <th>ISBN</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="bookList">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'http://127.0.0.1:8000/api/v1/books';
+
+    function fetchBooks() {
+        axios.get(API_URL).then(res => {
+            const list = document.getElementById('bookList');
+            list.innerHTML = '';
+            res.data.forEach(book => {
+                list.innerHTML += `
+                    <tr>
+                        <td><strong>${book.title}</strong></td>
+                        <td>${book.author}</td>
+                        <td><code>${book.isbn}</code></td>
+                        <td>
+                            <button class="btn-edit" onclick="editBook(${book.id})">Edit</button>
+                        </td>
+                    </tr>`;
+            });
+        }).catch(err => console.error("Gagal mengambil data", err));
+    }
+
+    function saveBook() {
+        const id = document.getElementById('bookId').value;
+        const data = {
+            title: document.getElementById('title').value,
+            author: document.getElementById('author').value,
+            isbn: document.getElementById('isbn').value,
+            published_date: document.getElementById('published_date').value
+        };
+
+        if (id) {
+            axios.put(`${API_URL}/${id}`, data)
+                .then(() => { alert('Buku berhasil diperbarui!'); fetchBooks(); resetForm(); })
+                .catch(err => alert('Error: ' + JSON.stringify(err.response.data.errors)));
+        } else {
+            axios.post(API_URL, data)
+                .then(() => { alert('Buku berhasil disimpan!'); fetchBooks(); resetForm(); })
+                .catch(err => alert('Error: ' + JSON.stringify(err.response.data.errors)));
+        }
+    }
+
+    function editBook(id) {
+        axios.get(`${API_URL}/${id}`).then(res => {
+            document.getElementById('bookId').value = res.data.id;
+            document.getElementById('title').value = res.data.title;
+            document.getElementById('author').value = res.data.author;
+            document.getElementById('isbn').value = res.data.isbn;
+            document.getElementById('published_date').value = res.data.published_date;
+        });
+    }
+
+    function resetForm() {
+        document.getElementById('bookId').value = '';
+        document.getElementById('title').value = '';
+        document.getElementById('author').value = '';
+        document.getElementById('isbn').value = '';
+        document.getElementById('published_date').value = '';
+    }
+
+    fetchBooks();
+</script>
+
+</body>
+</html>
